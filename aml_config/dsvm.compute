@@ -1,0 +1,8 @@
+address: [VM FQDN]
+baseDockerImage: microsoft/mmlspark:plus-gpu-0.9.9
+nvidiaDocker: true
+nativeSharedDirectory: ~/.azureml/share/
+password: [AZUREMLSECRET]
+sharedVolumes: true
+type: remotedocker
+username: [USERNAME]

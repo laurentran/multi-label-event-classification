@@ -1,58 +1,16 @@
-# This script generates the scoring and schema files
-# necessary to operationalize your model
-from azureml.api.schema.dataTypes import DataTypes
-from azureml.api.schema.sampleDefinition import SampleDefinition
-from azureml.api.realtime.services import generate_schema
-from azureml.assets import get_local_path
+from keras.models import load_model
+import numpy as np
+import sys
 
-# Prepare the web service definition by authoring
-# init() and run() functions. Test the functions
-# before deploying the web service.
+# this file is illustrative of how to deserialize the saved model and make a prediction
+# adjustments should be made based on how data gets passed in and how it should be written to the DB
+def main(X):
+    model = load_model('outputs/model.h5') # edit model path as appropriate
+    prediction = model.predict(X) # prediction will be a vector of probabilities for each event
+    print(prediction) # instead of printing, need to write to Cosmos DB
 
-model = None
-
-def init():
-    # Get the path to the model asset
-    # local_path = get_local_path('mymodel.model.link')
-    
-    # Load model using appropriate library and function
-    global model
-    # model = model_load_function(local_path)
-    model = 42
-
-def run(input_df):
-    import json
-    
-    # Predict using appropriate functions
-    # prediction = model.predict(input_df)
-
-    prediction = "%s %d" % (str(input_df), model)
-    return json.dumps(str(prediction))
-
-def generate_api_schema():
-    import os
-    print("create schema")
-    sample_input = "sample data text"
-    inputs = {"input_df": SampleDefinition(DataTypes.STANDARD, sample_input)}
-    os.makedirs('outputs', exist_ok=True)
-    print(generate_schema(inputs=inputs, filepath="outputs/schema.json", run_func=run))
-
-# Implement test code to run in IDE or Azure ML Workbench
-if __name__ == '__main__':
-    # Import the logger only for Workbench runs
-    from azureml.logging import get_azureml_logger
-
-    logger = get_azureml_logger()
-
-    import argparse
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--generate', action='store_true', help='Generate Schema')
-    args = parser.parse_args()
-
-    if args.generate:
-        generate_api_schema()
-
-    init()
-    input = "{}"
-    result = run(input)
-    logger.log("Result",result)
+if __name__ == "__main__":
+    # the argument passed in should be the new feature vector of 64 values
+    # it may not be in the correct shape for the model to make a prediction
+    # so, in main(), the vector should be reshaped as a (1,8,8,1) numpy array for the model to make an inference
+    main(sys.argv[1]) 
